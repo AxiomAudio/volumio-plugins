@@ -44,7 +44,7 @@ ControllerSpop.prototype.getConfigurationFiles = function()
 }
 
 ControllerSpop.prototype.addToBrowseSources = function () {
-	var data = {name: 'Spotify', uri: 'spotify',plugin_type:'music_service',plugin_name:'spop'};
+	var data = {name: 'Spotify', uri: 'spotify',plugin_type:'music_service',plugin_name:'spop', albumart: '/albumart?sourceicon=music_service/spop/spotify.svg'};
 	this.commandRouter.volumioAddToBrowseSources(data);
 };
 
@@ -217,14 +217,19 @@ ControllerSpop.prototype.spopDaemonConnect = function(defer) {
 ControllerSpop.prototype.onStop = function() {
 	var self = this;
 
+    var defer=libQ.defer();
+
 	self.logger.info("Killing SpopD daemon");
 	exec("/usr/bin/sudo /usr/bin/killall spopd", function (error, stdout, stderr) {
 		if(error){
 			self.logger.info('Cannot kill spop Daemon')
+            defer.reject();
+		} else {
+			defer.resolve()
 		}
 	});
 
-	return libQ.resolve();
+    return defer.promise;
 };
 
 ControllerSpop.prototype.onStart = function() {
